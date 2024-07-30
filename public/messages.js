@@ -78,29 +78,30 @@ export const showDataMessage = (data) => {
     const row = button.parentElement.parentElement
     const index = button.getAttribute('data-index')
 
-    const newItems = data.items.toSpliced(index, 1)
-    data.items = newItems
+    const newProducts = data.products.toSpliced(index, 1)
+    data.products = newProducts
 
     row.remove()
   }
 
   const html = `
     <div class="flex flex-col gap-4">
-      <p class="self-start"><strong>Referencia:</strong> ${data.id}</p>
+      <p class="text-red-400 text-sm text-left">Si uno de los productos no corresponde o genera un error, puedes eliminarlo haciendo clic en el ícono de la papelera.</p>
+      <p class="self-start"><strong>Referencia:</strong> ${data.ref}</p>
       <table class="border-collapse w-full border border-slate-500 bg-slate-800 text-sm shadow-sm text-center">
         <thead class="bg-slate-700">
           <tr>
             <th class="w-1/4 border border-slate-600 font-semibold p-3 text-slate-200 text-left">Descripción</th>
             <th class="w-1/4 border border-slate-600 font-semibold p-3 text-slate-200 text-left">Cantidad</th>
-            <th class="w-1/4 border border-slate-600 font-semibold p-3 text-slate-200 text-left">Precio</th>
+            <th class="w-1/4 border border-slate-600 font-semibold p-3 text-slate-200 text-left">Precio Unitario</th>
             <th class="w-1/4 border border-slate-600 font-semibold p-3 text-slate-200 text-left">Acciones</th>
           </tr>
         </thead>
         <tbody>
           ${
-            data.items.map((item, index) => `
+            data.products.map((item, index) => `
               <tr>
-                <td class="border border-slate-700 p-3 text-slate-400">${item.description}</td>
+                <td class="border border-slate-700 p-3 text-slate-400">${item.ref}</td>
                 <td class="border border-slate-700 p-3 text-slate-400">${item.quantity}</td>
                 <td class="border border-slate-700 p-3 text-slate-400">${item.price}</td>
                 <td class="border border-slate-700 p-3 text-slate-400">

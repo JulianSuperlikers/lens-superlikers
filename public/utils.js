@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { showCameraMessage, showProcessError } from './messages.js'
+import { showCameraMessage } from './messages.js'
 
 export const getQueryParams = (param) => {
   const url = new URL(window.location.href)
@@ -43,66 +43,29 @@ export const getSession = async () => {
 }
 
 export const processDocument = async (image, deviceData, externalId) => {
+  const uid = getQueryParams('uid')
+  const microsite = getQueryParams('microsite')
+
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       image,
       device_data: deviceData,
-      external_id: externalId
+      external_id: externalId,
+      uid,
+      microsite
     })
   }
   return await fetch('/process', requestOptions)
 }
 
-export const processImageResponse = (data) => {
-  const { line_items, is_duplicate, id, duplicate_of } = data
-
-  let error = ''
-  if (line_items.length === 0) error = 'La factura no tiene productos.'
-  if (is_duplicate) error = 'La factura está duplicada. Intenta subir otra factura.'
-
-  const items = line_items.map(item => {
-    const { description, price, quantity, total } = item
-
-    return {
-      description,
-      quantity,
-      price: !price ? total / quantity : price
-    }
-  })
-
-  if (error) {
-    showProcessError(error)
-    return { status: false }
-  }
-
-  return {
-    status: true,
-    id: is_duplicate ? duplicate_of : id,
-    is_duplicate,
-    duplicate_of,
-    items
-  }
-}
-
 export const saveData = async (data) => {
-  const items = data.items.map(item => {
-    return { ref: item.description, provider: 'TENA', line: 'TENA', price: item.price, quantity: item.quantity }
-  })
-
-  const uid = getQueryParams('uid')
-
-  const body = {
-    uid,
-    ref: data.id,
-    properties: { ticket: data.id },
-    products: items
-  }
+  data.microsite_url = getQueryParams('microsite')
 
   const requestOptions = {
     method: 'POST',
-    body: JSON.stringify(body),
+    body: JSON.stringify(data),
     headers: {
       'Content-Type': 'application/json'
     }

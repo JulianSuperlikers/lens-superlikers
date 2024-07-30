@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import VeryfiLens from '../veryfi-lens-wasm/veryfi-lens.js'
-import { isNotDocumentMessage, showDataMessage, showParticipantError } from './messages.js'
-import { checkCameraPermissions, createSubmitButton, getParticipantInfo, getQueryParams, getSession, processDocument, processImageResponse } from './utils.js'
+import { isNotDocumentMessage, showDataMessage, showParticipantError, showProcessError } from './messages.js'
+import { checkCameraPermissions, createSubmitButton, getParticipantInfo, getQueryParams, getSession, processDocument } from './utils.js'
 
 const croppedImage = document.createElement('img')
 
@@ -54,22 +54,20 @@ const processImage = async () => {
   document.getElementById('preview').style.display = 'none'
 
   const statusMessage = document.createElement('h1')
-  statusMessage.innerText = 'Loading...'
+  statusMessage.innerText = 'Cargando...'
   document.getElementById('status').appendChild(statusMessage)
 
   const response = await processDocument(croppedImage.src, deviceData, participant.uid)
   const body = await response.json()
 
+  statusMessage.remove()
+
   if (!response.ok) {
-    statusMessage.innerText = 'Document processing failed'
+    showProcessError(body.error ?? 'Document processing failed')
     return
   }
 
-  const data = processImageResponse(body)
-
-  if (data.status) {
-    showDataMessage(data)
-  }
+  showDataMessage(body)
 }
 
 const checkParticipant = async () => {
