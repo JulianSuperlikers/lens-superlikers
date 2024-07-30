@@ -24,24 +24,11 @@ export const getParticipantApi = async (distinctId) => {
   }
 }
 
-export const registerSaleApi = async (distinct_id, ref, products, properties, date, discount, category) => {
-  const data = {
-    campaign: config.TENA_CAMPAIGN_ID,
-    api_key: config.TENA_API_KEY,
-    distinct_id,
-    ref,
-    products
-  }
-
-  if (properties !== undefined) data.properties = properties
-  if (date !== undefined) data.date = date
-  if (discount !== undefined) data.discount = discount
-  if (category !== undefined) data.category = category
-
+export const registerSaleApi = async (data, apiKey) => {
   try {
     const response = await axios.post(`${config.SUPERLIKERS_URL}/retail/buy`, data, {
       headers: {
-        Authorization: `Bearer ${config.TENA_API_KEY}`
+        Authorization: `Bearer ${apiKey}`
       }
     })
 

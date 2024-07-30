@@ -1,6 +1,8 @@
 /* eslint-disable camelcase */
 import { getVeryfiSession, veryfiClient } from '../utils/verifyClient.js'
 import config from '../utils/config.js'
+import { getParticipantApi } from '../utils/superlikers.js'
+import { processDataByMicrosite } from '../utils/processData.js'
 
 export async function getSession (request, response) {
   const session = await getVeryfiSession(config.VERYFI_CLIENT_ID)
@@ -9,14 +11,27 @@ export async function getSession (request, response) {
 }
 
 export async function processDocument (request, response) {
-  const { external_id, device_data, image } = request.body
-  const ipAddress = request.connection.remoteAddress
+  try {
+    const { external_id, device_data, image, microsite, uid } = request.body
 
-  const [jsonResponse] = await Promise.all([veryfiClient.process_document_base64string(image, null, null, false, {
-    tags: [ipAddress],
-    external_id,
-    device_data
-  })])
+    const participant = await getParticipantApi(uid)
+    const ipAddress = request.connection.remoteAddress
 
-  response.status(200).json(jsonResponse)
+    const [jsonResponse] = await Promise.all([veryfiClient.process_document_base64string(image, null, null, false, {
+      tags: [ipAddress],
+      external_id,
+      device_data
+    })])
+
+    const data = processDataByMicrosite(microsite, participant.data, jsonResponse)
+
+    if (data.error) throw new Error(data.error)
+
+    response.status(200).json(data)
+  } catch (err) {
+    response.status(400).json({
+      ok: false,
+      error: err.message
+    })
+  }
 }
