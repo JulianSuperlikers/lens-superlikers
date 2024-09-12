@@ -87,7 +87,7 @@ export const checkCameraPermissions = async () => {
 
 export const createSubmitButton = () => {
   const submitButton = document.createElement('button')
-  submitButton.innerText = 'Submit'
+  submitButton.innerText = 'Enviar'
   submitButton.type = 'submit'
   submitButton.style.display = 'block'
   submitButton.style.marginTop = '10px'
