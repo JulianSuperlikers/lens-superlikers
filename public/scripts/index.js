@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import VeryfiLens from '../veryfi-lens-wasm/veryfi-lens.js'
-import { isNotDocumentMessage, showDataMessage, showParticipantError, showProcessError } from './messages.js'
-import { checkCameraPermissions, createSubmitButton, getParticipantInfo, getQueryParams, getSession, processDocument } from './utils.js'
+import { isNotDocumentMessage, showFinalMessage, showParticipantError, showProcessError } from './messages.js'
+import { checkCameraPermissions, createSubmitButton, createTakePhotoAgainButton, getParticipantInfo, getQueryParams, getSession, processDocument, reloadPage, saveData } from './utils.js'
 
 const croppedImage = document.createElement('img')
 
@@ -34,6 +34,9 @@ const captureWasm = async () => {
   const image = await VeryfiLens.captureWasm()
 
   const isDocument = await VeryfiLens.getIsDocument()
+
+  console.log({ isDocument })
+
   if (!isDocument) return isNotDocumentMessage()
 
   croppedImage.src = `data:image/jpeg;base64,${image}`
@@ -42,12 +45,16 @@ const captureWasm = async () => {
   container.appendChild(croppedImage)
 
   const submitButton = createSubmitButton()
+  const takePhotoButton = createTakePhotoAgainButton()
 
   const veryfiContainer = document.getElementById('veryfi-container')
   veryfiContainer.style.display = 'none'
 
   container.appendChild(submitButton)
+  container.appendChild(takePhotoButton)
+
   submitButton.addEventListener('click', processImage)
+  takePhotoButton.addEventListener('click', () => reloadPage())
 }
 
 const processImage = async () => {
@@ -62,12 +69,19 @@ const processImage = async () => {
 
   statusMessage.remove()
 
+  console.log({ response, body })
+
   if (!response.ok) {
     showProcessError(body.error ?? 'Document processing failed')
     return
   }
 
-  showDataMessage(body)
+  const res = await saveData(body)
+  if (!res.ok) {
+    showProcessError(response.error)
+  } else {
+    showFinalMessage()
+  }
 }
 
 const checkParticipant = async () => {

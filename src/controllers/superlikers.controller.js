@@ -20,7 +20,7 @@ export const registerSale = async (request, response) => {
 
   const microsite = MICROSITES_ID[microsite_url]
 
-  const apiKey = MICROSITES_CONSTS[microsite].api_key
+  const apiKey = MICROSITES_CONSTS[microsite]?.api_key
 
   if (!microsite || !apiKey) {
     throw new Error('micrositio no válido.')

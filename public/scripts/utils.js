@@ -77,21 +77,59 @@ export const saveData = async (data) => {
 }
 
 export const checkCameraPermissions = async () => {
-  const result = await navigator.permissions.query({ name: 'camera' })
+  if (!navigator.permissions) {
+    console.warn('Permissions API is not supported in this browser.')
+    return true
+  }
 
-  showCameraMessage(result.state)
-  result.onchange = () => showCameraMessage(result.state)
+  try {
+    const result = await navigator.permissions.query({ name: 'camera' })
 
-  return result.state !== 'denied'
+    console.log({ result })
+    // Handle the permission status
+    if (result.state === 'granted') {
+      return true // Permission already granted
+    } else if (result.state === 'denied') {
+      return false // Permission denied
+    } else {
+      // Permission status is 'prompt' or unknown
+      showCameraMessage(result.state)
+      result.onchange = () => showCameraMessage(result.state)
+      return result.state !== 'denied'
+    }
+  } catch (err) {
+    console.error('Error checking camera permissions:', err)
+    return false
+  }
 }
 
 export const createSubmitButton = () => {
   const submitButton = document.createElement('button')
   submitButton.innerText = 'Enviar'
   submitButton.type = 'submit'
-  submitButton.style.display = 'block'
-  submitButton.style.marginTop = '10px'
-  submitButton.style.backgroundColor = '#4CAF50'
+  submitButton.classList.add('submit-button')
 
   return submitButton
+}
+
+export const createTakePhotoAgainButton = () => {
+  const takeAgain = document.createElement('button')
+  takeAgain.innerText = 'Tomar la foto de nuevo'
+  takeAgain.classList.add('take-button')
+
+  return takeAgain
+}
+
+export const reloadPage = () => {
+  const url = new URL(window.location.href)
+  const params = new URLSearchParams(url.search)
+
+  // Set or update the 't' parameter
+  params.set('t', new Date().getTime())
+
+  // Construct the new URL with updated parameters
+  const newUrl = `${url.origin}${url.pathname}?${params.toString()}`
+
+  // Reload the page with the new URL
+  window.location.href = newUrl
 }

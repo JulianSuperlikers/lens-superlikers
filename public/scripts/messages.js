@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
-
-import { getQueryParams, saveData } from './utils.js'
+import { getQueryParams, reloadPage, saveData } from './utils.js'
 
 export const showCameraMessage = (state) => {
   if (state !== 'denied') return
@@ -23,7 +22,7 @@ export const isBlurryMessage = () => {
     icon: 'error',
     confirmButtonText: 'Tomar la foto de nuevo'
   }).then(() => {
-    window.location.reload()
+    reloadPage()
   })
 }
 
@@ -33,8 +32,8 @@ export const isNotDocumentMessage = () => {
     text: 'La imagen no es un documento válido',
     icon: 'error',
     confirmButtonText: 'Tomar la foto de nuevo'
-  }).then(() => {
-    window.location.reload()
+  }).then(async () => {
+    reloadPage()
   })
 }
 
@@ -57,7 +56,7 @@ export const showProcessError = (message) => {
     icon: 'error',
     confirmButtonText: 'Tomar la foto de nuevo'
   }).then(() => {
-    window.location.reload()
+    reloadPage()
   })
 }
 
@@ -129,7 +128,7 @@ export const showDataMessage = (data) => {
     }
   }).then((result) => {
     if (result.isConfirmed) {
-      window.location.reload()
+      reloadPage()
     } else {
       saveData(data).then(response => {
         if (!response.ok) {

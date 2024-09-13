@@ -27,6 +27,9 @@
       "no-unused-vars": "off",
       "no-prototype-builtins": "off"
     },
-    "ignorePatterns": ["public/wasm", "public/veryfi-lens-wasm"]
+    "ignorePatterns": [
+      "public/wasm",
+      "public/veryfi-lens-wasm"
+    ]
   }
 }
