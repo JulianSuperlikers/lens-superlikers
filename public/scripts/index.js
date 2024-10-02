@@ -27,6 +27,8 @@ const init = async () => {
 
   VeryfiLens.setLensSessionKey(session.session)
   deviceData = VeryfiLens.getDeviceData()
+
+  console.log({ session })
   await VeryfiLens.initWasm(session.session, session.client_id)
 }
 
