@@ -31,3 +31,5 @@ To use a proxy run:
 ```
 npx local-ssl-proxy --key localhost-key.pem --cert localhost.pem --source 3001 --target 5001
 ```
+
+npx local-ssl-proxy --key 186.155.19.180-key.pem --cert 186.155.19.180.pem --source 3001 --target 5001 --hostname 186.155.19.180
