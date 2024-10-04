@@ -9,10 +9,6 @@ let deviceData
 let participant
 
 const init = async () => {
-  // Validate participant
-  const { ok } = await checkParticipant()
-  if (!ok) return
-
   // Check camera permissions
   const cameraStatus = await checkCameraPermissions()
   if (!cameraStatus) return
@@ -25,10 +21,13 @@ const init = async () => {
   const session = await getSession()
   if (!session.ok) return showParticipantError(session.error)
 
+  // Validate participant
+  const { ok } = await checkParticipant()
+  if (!ok) return
+
   VeryfiLens.setLensSessionKey(session.session)
   deviceData = VeryfiLens.getDeviceData()
 
-  console.log({ session })
   await VeryfiLens.initWasm(session.session, session.client_id)
 }
 
@@ -36,8 +35,6 @@ const captureWasm = async () => {
   const image = await VeryfiLens.captureWasm()
 
   const isDocument = await VeryfiLens.getIsDocument()
-
-  console.log({ isDocument })
 
   if (!isDocument) return isNotDocumentMessage()
 
@@ -70,8 +67,6 @@ const processImage = async () => {
   const body = await response.json()
 
   statusMessage.remove()
-
-  console.log({ response, body })
 
   if (!response.ok) {
     showProcessError(body.error ?? 'Document processing failed')

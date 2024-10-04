@@ -1,29 +1,3 @@
-/* #veryfi-container {
-  height: 100vh;
-  width: 100vw;
-  position: relative;
-}
-
-#preview {
-  flex-direction: column;
-  overflow-y: scroll;
-  height: 100vh;
-  padding-bottom: 8rem;
-}
-
-#preview img {
-  max-height: 80vh;
-} */
-/* 
-#veryfi-video-ref {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-} */
-
 .submit-button, .take-button {
   color: #ffffff;
   border: none;
@@ -41,9 +15,3 @@
 .take-button { background-color: #6c757d; }
 .take-button:hover { background-color: #818e95; }
 .take-button:active { background-color: #5a6268; }
-
-@media (width >= 768px) {
-  /* #veryfi-video-ref {
-    object-fit: contain;
-  } */
-}

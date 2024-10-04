@@ -85,7 +85,6 @@ export const checkCameraPermissions = async () => {
   try {
     const result = await navigator.permissions.query({ name: 'camera' })
 
-    console.log({ result })
     // Handle the permission status
     if (result.state === 'granted') {
       return true // Permission already granted

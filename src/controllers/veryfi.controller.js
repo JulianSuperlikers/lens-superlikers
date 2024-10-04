@@ -5,9 +5,18 @@ import { getParticipantApi } from '../utils/superlikers.js'
 import { processDataByMicrosite } from '../utils/processData.js'
 
 export async function getSession (request, response) {
-  const session = await getVeryfiSession(config.VERYFI_CLIENT_ID)
+  try {
+    const session = await getVeryfiSession(config.VERYFI_CLIENT_ID)
 
-  response.status(200).json({ ok: true, session, client_id: config.VERYFI_CLIENT_ID })
+    if (session.ok === false) throw new Error(session.error)
+
+    response.status(200).json({ ok: true, session, client_id: config.VERYFI_CLIENT_ID })
+  } catch (err) {
+    response.status(400).json({
+      ok: false,
+      error: err.message
+    })
+  }
 }
 
 export async function processDocument (request, response) {
