@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import VeryfiLens from '../veryfi-lens-wasm/veryfi-lens.js'
 import { isNotDocumentMessage, showFinalMessage, showParticipantError, showProcessError } from './messages.js'
-import { checkCameraPermissions, createSubmitButton, createTakePhotoAgainButton, getParticipantInfo, getQueryParams, getSession, processDocument, reloadPage, saveData } from './utils.js'
+import { createSubmitButton, createTakePhotoAgainButton, getParticipantInfo, getQueryParams, getSession, processDocument, reloadPage, saveData } from './utils.js'
 
 const croppedImage = document.createElement('img')
 
@@ -9,10 +9,6 @@ let deviceData
 let participant
 
 const init = async () => {
-  // Check camera permissions
-  const cameraStatus = await checkCameraPermissions()
-  if (!cameraStatus) return
-
   // capture image on click
   const button = document.querySelector('button')
   button.addEventListener('click', captureWasm)

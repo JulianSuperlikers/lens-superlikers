@@ -23,7 +23,7 @@ npm run dev
 To change classes run:
 
 ```
-npx tailwindcss -i ./src/input.css -o ./src/output.css --watch
+npx tailwindcss -i ./public/input.css -o ./public/css/output.css --watch
 ```
 
 To use a proxy run:
