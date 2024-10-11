@@ -6,7 +6,6 @@ import { createSubmitButton, createTakePhotoAgainButton, getParticipantInfo, get
 const croppedImage = document.createElement('img')
 
 let deviceData
-let participant
 
 const init = async () => {
   // capture image on click
@@ -17,12 +16,8 @@ const init = async () => {
   const session = await getSession()
   if (!session.ok) return showParticipantError(session.error)
 
-  // Validate participant
-  const { ok } = await checkParticipant()
-  if (!ok) return
-
   VeryfiLens.setLensSessionKey(session.session)
-  deviceData = VeryfiLens.getDeviceData()
+  deviceData = await VeryfiLens.getDeviceData()
 
   await VeryfiLens.initWasm(session.session, session.client_id)
 }
@@ -31,7 +26,6 @@ const captureWasm = async () => {
   const image = await VeryfiLens.captureWasm()
 
   const isDocument = await VeryfiLens.getIsDocument()
-
   if (!isDocument) return isNotDocumentMessage()
 
   croppedImage.src = `data:image/jpeg;base64,${image}`
@@ -55,14 +49,12 @@ const captureWasm = async () => {
 const processImage = async () => {
   document.getElementById('preview').style.display = 'none'
 
-  const statusMessage = document.createElement('h1')
-  statusMessage.innerText = 'Cargando...'
-  document.getElementById('status').appendChild(statusMessage)
+  // Validate participant
+  const { ok, data } = await checkParticipant()
+  if (!ok) return
 
-  const response = await processDocument(croppedImage.src, deviceData, participant.uid)
+  const response = await processDocument(croppedImage.src, deviceData, data.nickname)
   const body = await response.json()
-
-  statusMessage.remove()
 
   if (!response.ok) {
     showProcessError(body.error ?? 'Document processing failed')
@@ -84,8 +76,6 @@ const checkParticipant = async () => {
   const response = await getParticipantInfo(uid)
 
   if (!response.ok) showParticipantError(response.error)
-
-  participant = response.data
   return response
 }
 

@@ -23,12 +23,30 @@ export const validateData = (data) => {
   if (data.line_items.length === 0) throw new Error('La factura no tiene productos.')
   if (data.is_duplicate) throw new Error('La factura está duplicada. Intenta subir otra factura.')
 
+  const TAGS_MESSAGES = {
+    NO_PRODUCT_FOUND: 'No se encontraron productos tena en esta factura.',
+    DUPLICATED: 'La factura está duplicada. Intenta subir otra factura.',
+    NOT_VALID_DATE: 'La fecha de la factura supera los el mes.',
+    NO_VENDOR: 'No se puedo detectar el nombre de la tienda.'
+  }
+
+  if (data.tags.length > 0) {
+    const tag = data.tags.at(0)
+    const message = TAGS_MESSAGES[tag.name]
+
+    if (message) throw new Error(message)
+  }
+
   return data
 }
 
 export const getItems = (data, additionalFields) => {
-  return data.line_items.map(item => {
-    const { description, price, quantity, total } = item
+  const products = []
+
+  return data.line_items.forEach(item => {
+    const { description, price, quantity, total, tags } = item
+
+    if (!tags.includes('PRODUCT_FOUND')) return
 
     const newItem = {
       ref: description,
@@ -36,11 +54,9 @@ export const getItems = (data, additionalFields) => {
       price: !price ? total / quantity : price
     }
 
-    if (additionalFields) {
-      return { ...newItem, ...additionalFields }
-    }
+    if (additionalFields) return { ...newItem, ...additionalFields }
 
-    return newItem
+    products.push(newItem)
   })
 }
 

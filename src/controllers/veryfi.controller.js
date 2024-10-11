@@ -24,23 +24,29 @@ export async function processDocument (request, response) {
     const { external_id, device_data, image, microsite, uid } = request.body
 
     const participant = await getParticipantApi(uid)
-    const ipAddress = request.connection.remoteAddress
+    const ip_address = request.connection.remoteAddress
 
-    const [jsonResponse] = await Promise.all([veryfiClient.process_document_base64string(image, null, null, false, {
-      tags: [ipAddress],
+    const [json_response] = await Promise.all([veryfiClient.process_document_base64string(image, null, null, false, {
+      tags: [ip_address],
       external_id,
       device_data
     })])
 
-    const data = processDataByMicrosite(microsite, participant.data, jsonResponse)
+    const data = processDataByMicrosite(microsite, participant.data, json_response)
 
     if (data.error) throw new Error(data.error)
 
     response.status(200).json(data)
   } catch (err) {
+    console.log(err)
     response.status(400).json({
       ok: false,
       error: err.message
     })
   }
+}
+
+export async function webhook (request, response) {
+  console.log(request.body)
+  response.status(200)
 }

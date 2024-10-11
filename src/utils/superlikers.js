@@ -7,8 +7,7 @@ export const getParticipantApi = async (distinctId) => {
     const response = await axios.get(`${config.SUPERLIKERS_URL}/participants/info`, {
       params: {
         campaign: config.TENA_CAMPAIGN_ID,
-        distinct_id: distinctId,
-        api_key: config.TENA_API_KEY
+        distinct_id: distinctId
       },
       headers: {
         Authorization: `Bearer ${config.TENA_API_KEY}`
