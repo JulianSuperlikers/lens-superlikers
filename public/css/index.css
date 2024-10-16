@@ -15,3 +15,13 @@
 .take-button { background-color: #6c757d; }
 .take-button:hover { background-color: #818e95; }
 .take-button:active { background-color: #5a6268; }
+
+#preview {
+  overflow-y: scroll;
+  height: 100%;
+}
+
+#preview > img {
+  max-width: 100%;
+  height: calc(100dvh - 80px);
+}
