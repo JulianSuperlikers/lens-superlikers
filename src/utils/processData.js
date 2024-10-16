@@ -20,8 +20,12 @@ export const MICROSITES_CONSTS = {
 }
 
 export const validateData = (data) => {
-  if (data.line_items.length === 0) return 'La factura no tiene productos.'
-  if (data.is_duplicate) return 'La factura está duplicada. Intenta subir otra factura.'
+  let errorMessage = ''
+
+  if (data.line_items.length === 0) errorMessage = 'La factura no tiene productos.'
+  if (data.is_duplicate) errorMessage = 'La factura está duplicada. Intenta subir otra factura.'
+
+  const TAGS = ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NOT_VALID_DATE', 'NO_VENDOR']
 
   const TAGS_MESSAGES = {
     NO_PRODUCT_FOUND: 'No se encontraron productos tena en esta factura.',
@@ -30,11 +34,18 @@ export const validateData = (data) => {
     NO_VENDOR: 'No se puedo detectar el nombre de la tienda.'
   }
 
-  if (data.tags.length > 0) {
-    const tag = data.tags.at(0)
-    const message = TAGS_MESSAGES[tag.name]
+  const foundTag = data.tags.find(item => {
+    const hasTag = TAGS.includes(item.name)
+    return hasTag ? item : undefined
+  })
 
-    if (message) return message
+  if (foundTag) {
+    const message = TAGS_MESSAGES[foundTag.name]
+    if (message) errorMessage = message
+  }
+
+  if (errorMessage) {
+    return `${errorMessage} Ref: ${data.id}`
   }
 }
 
