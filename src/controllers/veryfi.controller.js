@@ -37,6 +37,9 @@ export async function processDocument (request, response) {
     const error = validateData(json_response)
     if (error) throw new Error(error)
 
+    // const updateResponse = await updateDocument(document)
+    // console.log({ updateResponse })
+
     const data = processDataByMicrosite(microsite, participant.data, json_response)
 
     response.status(200).json(data)
@@ -53,7 +56,7 @@ export async function webhook (request, response) {
   const { data } = request.body
 
   const micrositeUrl = 'https://www.circulotena.com.mx/'
-  const microsite = 'sz'
+  const microsite = config.TENA_CAMPAIGN_ID
   const apiKey = config.TENA_API_KEY
 
   try {
@@ -72,8 +75,8 @@ export async function webhook (request, response) {
     const filteredDocumentsProcessedData = documentsProcessedData.filter(item => !!item)
 
     const registerSalesPromises = filteredDocumentsProcessedData.map(async item => {
-      const { distinct_id, ref, products, properties, date, discount, category } = item
-      const data = { campaign: microsite, distinct_id, ref, products, properties, date, discount, category }
+      const { distinct_id, ref, products, properties, date, discount } = item
+      const data = { campaign: microsite, distinct_id, ref, products, properties, date, discount, category: 'fisica' }
 
       return await registerSaleApi(data, apiKey)
     })
@@ -104,6 +107,37 @@ export async function getDocumentById (documentId) {
     if (data.ok === false) throw new Error(data.error)
     return data
   } catch (err) {
+    const message = err.response.data.message ?? err.message
+    return { ok: false, error: message }
+  }
+}
+
+export async function updateDocument (updatedDocument) {
+  const params = {
+    method: 'put',
+    maxBodyLength: Infinity,
+    url: `https://api.veryfi.com/api/v8/partner/documents/${updatedDocument.id}`,
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'Application/json',
+      'CLIENT-ID': config.VERYFI_CLIENT_ID,
+      AUTHORIZATION: `apikey ${config.VERYFI_USERNAME}:${config.VERYFI_API_KEY}`
+    },
+    data: JSON.stringify({
+      meta: {
+        device_user_uuid: updateDocument.device_user_uuid
+      }
+    })
+  }
+
+  try {
+    const { data } = await axios(params)
+
+    if (data.ok === false) throw new Error(data.error)
+    return data
+  } catch (err) {
+    console.log({ err: JSON.stringify(err) })
+    console.log(JSON.stringify(err.data))
     const message = err.response.data.message ?? err.message
     return { ok: false, error: message }
   }

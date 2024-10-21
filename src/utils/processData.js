@@ -22,16 +22,18 @@ export const MICROSITES_CONSTS = {
 export const validateData = (data) => {
   let errorMessage = ''
 
-  if (data.line_items.length === 0) errorMessage = 'La factura no tiene productos.'
-  if (data.is_duplicate) errorMessage = 'La factura está duplicada. Intenta subir otra factura.'
+  if (data.line_items.length === 0) errorMessage = 'No se encontraron productos Tena en esta factura.'
+  if (data.is_duplicate) errorMessage = 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.'
 
-  const TAGS = ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NOT_VALID_DATE', 'NO_VENDOR']
+  const TAGS = ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NOT_VALID_DATE', 'NO_VENDOR', 'FRAUD', 'REJECTED']
 
   const TAGS_MESSAGES = {
-    NO_PRODUCT_FOUND: 'No se encontraron productos tena en esta factura.',
-    DUPLICATED: 'La factura está duplicada. Intenta subir otra factura.',
-    NOT_VALID_DATE: 'La fecha de la factura supera el mes.',
-    NO_VENDOR: 'No se puedo detectar el nombre de la tienda.'
+    NO_PRODUCT_FOUND: 'No se encontraron productos Tena en esta factura.',
+    DUPLICATED: 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.',
+    NOT_VALID_DATE: 'La fecha de la factura supera el periodo permitido. Por favor, sube una factura más reciente.',
+    NO_VENDOR: 'No pudimos identificar el nombre de la tienda. Intenta con una factura más legible.',
+    FRAUD: 'Hemos detectado inconsistencias en la información proporcionada.',
+    REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.'
   }
 
   const foundTag = data.tags.find(item => {

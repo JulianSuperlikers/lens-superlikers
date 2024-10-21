@@ -16,8 +16,8 @@ export const getParticipantInfo = async (request, response) => {
 }
 
 export const registerSale = async (request, response) => {
-  const { microsite_url, distinct_id, ref, products, properties, date, discount, category } = request.body
-  console.log({ microsite_url, distinct_id, ref, products, properties, date, discount, category })
+  const { microsite_url, distinct_id, ref, products, properties, date, discount } = request.body
+
   const microsite = MICROSITES_ID[microsite_url]
 
   const apiKey = MICROSITES_CONSTS[microsite]?.api_key
@@ -26,7 +26,7 @@ export const registerSale = async (request, response) => {
     throw new Error('micrositio no válido.')
   }
 
-  const data = { campaign: microsite, distinct_id, ref, products, properties, date, discount, category }
+  const data = { campaign: microsite, distinct_id, ref, products, properties, date, discount, category: 'fisica' }
 
   try {
     const res = await registerSaleApi(data, apiKey)
