@@ -54,9 +54,16 @@ export const showProcessError = (message) => {
     title: 'Ups... Ha ocurrido un error!',
     text: message,
     icon: 'error',
-    confirmButtonText: 'Tomar la foto de nuevo'
-  }).then(() => {
-    reloadPage()
+    confirmButtonText: 'Tomar la foto de nuevo',
+    showCancelButton: true,
+    cancelButtonText: 'Regresar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      reloadPage()
+    } else {
+      const microsite = getQueryParams('microsite')
+      if (microsite) window.location.href = microsite
+    }
   })
 }
 

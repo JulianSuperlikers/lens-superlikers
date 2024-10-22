@@ -38,3 +38,4 @@ export const registerSale = async (request, response) => {
     })
   }
 }
+// poner los puntos otorgados (points)
