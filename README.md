@@ -31,3 +31,7 @@ To use a proxy run:
 ```
 npx local-ssl-proxy --key localhost-key.pem --cert localhost.pem --source 3001 --target 5001
 ```
+
+```
+ngrok http 5001
+```
