@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import config from './config.js'
 
 export const MICROSITES_ID = {
@@ -55,12 +56,15 @@ export const getItems = (data, additionalFields) => {
   const validItems = data.line_items.filter(item => item.tags.includes('PRODUCT_FOUND'))
 
   const products = validItems.map(item => {
-    const { description, price, quantity, total } = item
+    const { description, product_details, price, quantity, total } = item
+
+    const ref = product_details.at(0) ? product_details.at(0).product_name : description
 
     const newItem = {
-      ref: description,
+      ref,
       quantity,
-      price: !price ? total / quantity : price
+      price: !price ? total / quantity : price,
+      type: data.vendor.name
     }
 
     if (additionalFields) return { ...newItem, ...additionalFields }
