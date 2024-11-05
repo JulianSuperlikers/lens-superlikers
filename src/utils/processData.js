@@ -23,15 +23,16 @@ export const MICROSITES_CONSTS = {
 export const validateData = (data) => {
   let errorMessage = ''
 
-  if (data.line_items.length === 0) errorMessage = 'No se encontraron productos Tena en esta factura.'
+  if (data.line_items.length === 0) errorMessage = 'No se encontraron productos TENA en esta factura.'
   if (data.is_duplicate) errorMessage = 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.'
 
-  const TAGS = ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NOT_VALID_DATE', 'NO_VENDOR', 'FRAUD', 'REJECTED']
+  const TAGS = ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NO_DATE', 'NOT_VALID_DATE', 'NO_VENDOR', 'FRAUD', 'REJECTED']
 
   const TAGS_MESSAGES = {
-    NO_PRODUCT_FOUND: 'No se encontraron productos Tena en esta factura.',
+    NO_PRODUCT_FOUND: 'No se encontraron productos TENA en esta factura.',
     DUPLICATED: 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.',
     NOT_VALID_DATE: 'La fecha de la factura supera el periodo permitido. Por favor, sube una factura más reciente.',
+    NO_DATE: 'No esta la fecha del ticket en la foto',
     NO_VENDOR: 'No pudimos identificar el nombre de la tienda. Intenta con una factura más legible.',
     FRAUD: 'Hemos detectado inconsistencias en la información proporcionada.',
     REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.'
@@ -71,7 +72,14 @@ export const getItems = (data, additionalFields) => {
     return newItem
   })
 
-  return products
+  const itemsDiscount = validItems.map(item => {
+    if (!item.discount) return 0
+    return item.discount < 0 ? item.discount * -1 : item.discount
+  })
+
+  const discount = itemsDiscount.reduce((ac, value) => ac + value, 0)
+
+  return [products, discount]
 }
 
 export const processDataByMicrosite = (micrositeUrl, participant, data) => {
@@ -81,17 +89,17 @@ export const processDataByMicrosite = (micrositeUrl, participant, data) => {
 
     const ref = data.is_duplicate ? data.duplicate_of : data.id
     const distinctId = participant[micrositeConsts.uid]
-    const items = getItems(data, micrositeConsts.additionalProductsFields)
+    const [items, discount] = getItems(data, micrositeConsts.additionalProductsFields)
 
     const processedData = {
       ref,
       distinct_id: distinctId,
-      products: items
+      products: items,
+      discount
     }
 
     if (micrositeConsts.properties) processedData.properties = micrositeConsts.properties(data)
     if (micrositeConsts.date) processedData.date = micrositeConsts.date(data)
-    if (micrositeConsts.discount) processedData.discount = micrositeConsts.discount(data)
     if (micrositeConsts.category) processedData.category = micrositeConsts.category(data)
 
     return processedData

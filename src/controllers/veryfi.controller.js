@@ -2,7 +2,7 @@
 import axios from 'axios'
 import config from '../utils/config.js'
 
-import { getVeryfiSession, veryfiClient } from '../utils/verifyClient.js'
+import { getVeryfiSession, stringToUUID, veryfiClient } from '../utils/verifyClient.js'
 import { getParticipantApi, registerSaleApi } from '../utils/superlikers.js'
 import { processDataByMicrosite, validateData } from '../utils/processData.js'
 
@@ -26,21 +26,17 @@ export async function processDocument (request, response) {
     const { external_id, device_data, image, microsite, uid } = request.body
 
     const participant = await getParticipantApi(uid)
-    const ip_address = request.connection.remoteAddress
+    const userUuid = await stringToUUID(uid)
+    device_data.user_uuid = userUuid
 
-    const [json_response] = await Promise.all([veryfiClient.process_document_base64string(image, null, null, false, {
-      tags: [ip_address],
-      external_id,
+    const [document] = await Promise.all([veryfiClient.process_document_base64string(image, null, null, false, {
       device_data
     })])
 
-    const error = validateData(json_response)
+    const error = validateData(document)
     if (error) throw new Error(error)
 
-    // const updateResponse = await updateDocument(document)
-    // console.log({ updateResponse })
-
-    const data = processDataByMicrosite(microsite, participant.data, json_response)
+    const data = processDataByMicrosite(microsite, participant.data, document)
 
     response.status(200).json(data)
   } catch (err) {
@@ -67,7 +63,7 @@ export async function webhook (request, response) {
       const error = validateData(document)
       if (error) return null
 
-      const participant = await getParticipantApi(document.external_id)
+      const participant = await getParticipantApi(document.notes ?? document.external_id)
       return processDataByMicrosite(micrositeUrl, participant.data, document, false)
     })
 
@@ -112,22 +108,18 @@ export async function getDocumentById (documentId) {
   }
 }
 
-export async function updateDocument (updatedDocument) {
+export async function updateDocument (id, data) {
   const params = {
     method: 'put',
     maxBodyLength: Infinity,
-    url: `https://api.veryfi.com/api/v8/partner/documents/${updatedDocument.id}`,
+    url: `https://api.veryfi.com/api/v8/partner/documents/${id}`,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'Application/json',
       'CLIENT-ID': config.VERYFI_CLIENT_ID,
       AUTHORIZATION: `apikey ${config.VERYFI_USERNAME}:${config.VERYFI_API_KEY}`
     },
-    data: JSON.stringify({
-      meta: {
-        device_user_uuid: updateDocument.device_user_uuid
-      }
-    })
+    data
   }
 
   try {
@@ -136,9 +128,33 @@ export async function updateDocument (updatedDocument) {
     if (data.ok === false) throw new Error(data.error)
     return data
   } catch (err) {
-    console.log({ err: JSON.stringify(err) })
-    console.log(JSON.stringify(err.data))
     const message = err.response.data.message ?? err.message
+    return { ok: false, error: message }
+  }
+}
+
+export async function addTagToDocument (id, tag) {
+  const params = {
+    method: 'put',
+    maxBodyLength: Infinity,
+    url: `https://api.veryfi.com/api/v8/partner/documents/${id}/tags`,
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'Application/json',
+      'CLIENT-ID': config.VERYFI_CLIENT_ID,
+      AUTHORIZATION: `apikey ${config.VERYFI_USERNAME}:${config.VERYFI_API_KEY}`
+    },
+    data: JSON.stringify(tag)
+  }
+
+  try {
+    const { data } = await axios(params)
+
+    if (data.ok === false) throw new Error(data.error)
+    return data
+  } catch (err) {
+    console.log(JSON.stringify(err.response.data))
+    const message = err.response.data.error ?? err.message
     return { ok: false, error: message }
   }
 }

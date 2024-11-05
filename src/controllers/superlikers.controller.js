@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { MICROSITES_CONSTS, MICROSITES_ID } from '../utils/processData.js'
 import { getParticipantApi, registerSaleApi } from '../utils/superlikers.js'
+import { addTagToDocument, updateDocument } from './veryfi.controller.js'
 
 export const getParticipantInfo = async (request, response) => {
   try {
@@ -16,7 +17,7 @@ export const getParticipantInfo = async (request, response) => {
 }
 
 export const registerSale = async (request, response) => {
-  const { microsite_url, distinct_id, ref, products, properties, date, discount } = request.body
+  const { microsite_url, distinct_id, ref, products, properties, discount } = request.body
 
   const microsite = MICROSITES_ID[microsite_url]
 
@@ -26,10 +27,21 @@ export const registerSale = async (request, response) => {
     throw new Error('micrositio no válido.')
   }
 
-  const data = { campaign: microsite, distinct_id, ref, products, properties, date, discount, category: 'fisica' }
+  const data = { campaign: microsite, distinct_id, ref, products, properties, discount, category: 'fisica' }
 
   try {
     const res = await registerSaleApi(data, apiKey)
+
+    const documentDataToUpdate = {
+      notes: distinct_id,
+      external_id: res.invoice._id
+    }
+
+    await updateDocument(ref, documentDataToUpdate)
+
+    const tag = { name: `points:${res.invoice.points}` }
+    await addTagToDocument(ref, tag)
+
     response.status(200).json(res)
   } catch (err) {
     response.status(400).json({
@@ -38,4 +50,3 @@ export const registerSale = async (request, response) => {
     })
   }
 }
-// poner los puntos otorgados (points)
