@@ -14,23 +14,27 @@ export const veryfiClient = new Client(
 )
 
 export async function stringToUUID (string) {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(string)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  try {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(string)
+    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', data)
 
-  // Convert hash to hex
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    // Convert hash to hex
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-  const uuid = [
-    hashHex.substring(0, 8),
-    hashHex.substring(8, 12),
-    hashHex.substring(12, 16),
-    hashHex.substring(16, 20),
-    hashHex.substring(20, 32)
-  ].join('-')
+    const uuid = [
+      hashHex.substring(0, 8),
+      hashHex.substring(8, 12),
+      hashHex.substring(12, 16),
+      hashHex.substring(16, 20),
+      hashHex.substring(20, 32)
+    ].join('-')
 
-  return uuid
+    return uuid
+  } catch (err) {
+    console.log({ err })
+  }
 }
 
 export async function getVeryfiSession (clientId) {
