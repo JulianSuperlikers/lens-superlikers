@@ -26,7 +26,7 @@ export async function processDocument (request, response) {
     const { external_id, device_data, image, microsite, uid } = request.body
 
     const participant = await getParticipantApi(uid)
-    const userUuid = await stringToUUID(uid)
+    const userUuid = uid
     device_data.user_uuid = userUuid
 
     const [document] = await Promise.all([veryfiClient.process_document_base64string(image, null, null, false, {
