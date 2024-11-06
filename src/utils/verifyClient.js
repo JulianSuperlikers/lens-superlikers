@@ -1,6 +1,8 @@
 import axios from 'axios'
 import Client from '@veryfi/veryfi-sdk'
 
+import { createHash } from 'crypto'
+
 import config from './config.js'
 
 export const veryfiClient = new Client(
@@ -15,20 +17,14 @@ export const veryfiClient = new Client(
 
 export async function stringToUUID (string) {
   try {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(string)
-    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', data)
-
-    // Convert hash to hex
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    const hash = createHash('sha256').update(string).digest('hex')
 
     const uuid = [
-      hashHex.substring(0, 8),
-      hashHex.substring(8, 12),
-      hashHex.substring(12, 16),
-      hashHex.substring(16, 20),
-      hashHex.substring(20, 32)
+      hash.substring(0, 8),
+      hash.substring(8, 12),
+      hash.substring(12, 16),
+      hash.substring(16, 20),
+      hash.substring(20, 32)
     ].join('-')
 
     return uuid
