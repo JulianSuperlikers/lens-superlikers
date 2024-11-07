@@ -33,7 +33,7 @@ export async function processDocument (request, response) {
     // })])
 
     const deviceData = { ...device_data, user_uuid: userUuid }
-    const document = await veryfiClient.process_document_base64string(
+    const document = await veryfiClient.process_document_from_base64(
       image,
       null,
       null,
