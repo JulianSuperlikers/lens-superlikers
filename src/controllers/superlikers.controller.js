@@ -33,7 +33,6 @@ export const registerSale = async (request, response) => {
     const res = await registerSaleApi(data, apiKey)
 
     const documentDataToUpdate = {
-      notes: distinct_id,
       external_id: res.invoice._id
     }
 

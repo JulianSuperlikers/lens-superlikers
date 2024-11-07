@@ -37,6 +37,12 @@ export async function processDocument (request, response) {
       { device_data: deviceData }
     )
 
+    const documentDataToUpdate = {
+      notes: uid
+    }
+
+    await updateDocument(document.id, documentDataToUpdate)
+
     const error = validateData(document)
     if (error) throw new Error(error)
 
