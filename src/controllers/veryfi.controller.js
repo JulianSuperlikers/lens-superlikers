@@ -27,11 +27,21 @@ export async function processDocument (request, response) {
 
     const participant = await getParticipantApi(uid)
     const userUuid = await stringToUUID(uid)
-    device_data.user_uuid = userUuid
 
-    const [document] = await Promise.all([veryfiClient.process_document_base64string(image, null, null, false, {
-      device_data
-    })])
+    // const [document] = await Promise.all([veryfiClient.process_document_base64string(image, null, null, false, {
+    //   device_data
+    // })])
+
+    const deviceData = { ...device_data, user_uuid: userUuid }
+    const document = await veryfiClient.process_document_base64string(
+      image,
+      null,
+      null,
+      false,
+      { device_data: deviceData }
+    )
+
+    console.log(document)
 
     const error = validateData(document)
     if (error) throw new Error(error)
