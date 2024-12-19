@@ -50,10 +50,10 @@ const processImage = async () => {
   document.getElementById('preview').style.display = 'none'
 
   // Validate participant
-  const { ok, data } = await checkParticipant()
+  const { ok } = await checkParticipant()
   if (!ok) return
 
-  const response = await processDocument(croppedImage.src, deviceData, data.nickname)
+  const response = await processDocument(croppedImage.src, deviceData)
   const body = await response.json()
 
   if (!response.ok) {
@@ -62,6 +62,7 @@ const processImage = async () => {
   }
 
   const res = await saveData(body)
+  console.log({ res })
   if (!res.ok) {
     showProcessError(response.error)
   } else {
@@ -71,9 +72,10 @@ const processImage = async () => {
 
 const checkParticipant = async () => {
   const uid = getQueryParams('uid')
+  const campaign = getQueryParams('microsite')
   if (!uid) return showParticipantError('No se encontró un participante.')
 
-  const response = await getParticipantInfo(uid)
+  const response = await getParticipantInfo(uid, campaign)
 
   if (!response.ok) showParticipantError(response.error)
   return response

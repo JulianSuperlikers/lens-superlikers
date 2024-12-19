@@ -1,8 +1,7 @@
 /* eslint-disable camelcase */
 import axios from 'axios'
-import Client from '@veryfi/veryfi-sdk'
-
 import { getConfig } from '../utils/config.js'
+import Client from '@veryfi/veryfi-sdk'
 
 import { getVeryfiSession, stringToUUID } from '../utils/verifyClient.js'
 import { getParticipantApi, registerSaleApi } from '../utils/superlikers.js'
@@ -28,7 +27,6 @@ export async function getSession (request, response) {
 
 export async function processDocument (request, response) {
   const { device_data, image, campaign, uid } = request.body
-
   const { VERYFI_CLIENT_ID, VERYFI_USERNAME, VERYFI_API_KEY, VERYFI_BASE_URL, VERYFI_CLIENT_SECRET } = getConfig(campaign)
 
   try {
@@ -59,7 +57,7 @@ export async function processDocument (request, response) {
       notes: uid
     }
 
-    await updateDocument(document.id, documentDataToUpdate)
+    await updateDocument(document.id, documentDataToUpdate, campaign)
 
     const error = validateData(document)
     if (error) throw new Error(error)
@@ -68,7 +66,7 @@ export async function processDocument (request, response) {
 
     response.status(200).json(data)
   } catch (err) {
-    console.log(err)
+    console.log({ err })
     response.status(400).json({
       ok: false,
       error: err.message
@@ -77,6 +75,7 @@ export async function processDocument (request, response) {
 }
 
 export async function webhook (request, response) {
+  // todo: revisar el campaign como se puede poner en el document de veryfi
   const { data, campaign } = request.body
 
   try {

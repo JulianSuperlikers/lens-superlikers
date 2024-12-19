@@ -9,11 +9,11 @@ export const getQueryParams = (param) => {
   return value
 }
 
-export const getParticipantInfo = async (uid) => {
+export const getParticipantInfo = async (uid, campaign) => {
   try {
     const requestOptions = {
       method: 'POST',
-      body: JSON.stringify({ uid }),
+      body: JSON.stringify({ uid, campaign }),
       headers: {
         'Content-Type': 'application/json'
       }
@@ -29,12 +29,15 @@ export const getParticipantInfo = async (uid) => {
 }
 
 export const getSession = async () => {
+  const campaignId = getQueryParams('microsite')
+
   const requestOptions = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*'
-    }
+    },
+    body: JSON.stringify({ campaign: campaignId })
   }
 
   return await fetch('/session', requestOptions)
@@ -42,9 +45,10 @@ export const getSession = async () => {
     .catch((error) => error)
 }
 
-export const processDocument = async (image, deviceData, externalId) => {
+export const processDocument = async (image, deviceData) => {
   const uid = getQueryParams('uid')
-  const microsite = getQueryParams('microsite')
+  const campaign = getQueryParams('microsite')
+  console.log({ uid, campaign })
 
   const requestOptions = {
     method: 'POST',
@@ -52,16 +56,15 @@ export const processDocument = async (image, deviceData, externalId) => {
     body: JSON.stringify({
       image,
       device_data: deviceData,
-      external_id: externalId,
       uid,
-      microsite
+      campaign
     })
   }
   return await fetch('/process', requestOptions)
 }
 
 export const saveData = async (data) => {
-  data.microsite_url = getQueryParams('microsite')
+  data.campaign = getQueryParams('microsite')
 
   const requestOptions = {
     method: 'POST',

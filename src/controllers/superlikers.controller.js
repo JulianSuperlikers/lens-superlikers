@@ -3,10 +3,10 @@ import { getParticipantApi, registerSaleApi } from '../utils/superlikers.js'
 import { addTagToDocument, updateDocument } from './veryfi.controller.js'
 
 export const getParticipantInfo = async (request, response) => {
-  const { campaign } = request.body
+  const { campaign, uid } = request.body
 
   try {
-    const data = await getParticipantApi(request.body.uid, campaign)
+    const data = await getParticipantApi(uid, campaign)
 
     response.status(200).json(data)
   } catch (err) {
