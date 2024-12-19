@@ -1,18 +1,28 @@
 /* eslint-disable camelcase */
-import config from './config.js'
+import { getConfig } from './config.js'
 
-export const MICROSITES_ID = {
-  'https://www.circulotena.com.mx/': config.TENA_CAMPAIGN_ID
+export const MICROSITES_URLS = {
+  sz: 'https://www.circulotena.com.mx/',
+  ua: 'https://sabaclub.com.mx/'
 }
 
 export const MICROSITES_CONSTS = {
   sz: {
     uid: 'nickname',
-    campaign: config.TENA_CAMPAIGN_ID,
-    api_key: config.TENA_API_KEY,
     additionalProductsFields: {
       provider: 'TENA',
       line: 'TENA'
+    },
+    properties: (data) => {
+      return { ticket: data.is_duplicate ? data.duplicate_of : data.id }
+    }
+
+  },
+  ua: {
+    uid: 'email',
+    additionalProductsFields: {
+      provider: 'SABA',
+      line: 'SABA'
     },
     properties: (data) => {
       return { ticket: data.is_duplicate ? data.duplicate_of : data.id }
@@ -82,10 +92,10 @@ export const getItems = (data, additionalFields) => {
   return [products, discount]
 }
 
-export const processDataByMicrosite = (micrositeUrl, participant, data) => {
+export const processDataByMicrosite = (campaign, participant, data) => {
   try {
-    const microsite = MICROSITES_ID[micrositeUrl]
-    const micrositeConsts = MICROSITES_CONSTS[microsite]
+    const micrositeUrl = MICROSITES_URLS[campaign]
+    const micrositeConsts = MICROSITES_CONSTS[campaign]
 
     const ref = data.is_duplicate ? data.duplicate_of : data.id
     const distinctId = participant[micrositeConsts.uid]
@@ -95,6 +105,7 @@ export const processDataByMicrosite = (micrositeUrl, participant, data) => {
       ref,
       distinct_id: distinctId,
       products: items,
+      redirect_url: micrositeUrl,
       discount
     }
 

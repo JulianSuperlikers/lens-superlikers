@@ -1,16 +1,18 @@
 /* eslint-disable camelcase */
 import axios from 'axios'
-import config from './config.js'
+import { getConfig } from './config.js'
 
-export const getParticipantApi = async (distinctId) => {
+export const getParticipantApi = async (distinctId, campaignId) => {
+  const { SUPERLIKERS_URL, CAMPAIGN_ID, API_KEY } = getConfig(campaignId)
+
   try {
-    const response = await axios.get(`${config.SUPERLIKERS_URL}/participants/info`, {
+    const response = await axios.get(`${SUPERLIKERS_URL}/participants/info`, {
       params: {
-        campaign: config.TENA_CAMPAIGN_ID,
+        campaign: CAMPAIGN_ID,
         distinct_id: distinctId
       },
       headers: {
-        Authorization: `Bearer ${config.TENA_API_KEY}`
+        Authorization: `Bearer ${API_KEY}`
       }
     })
 
@@ -23,11 +25,13 @@ export const getParticipantApi = async (distinctId) => {
   }
 }
 
-export const registerSaleApi = async (data, apiKey) => {
+export const registerSaleApi = async (data, campaignId) => {
+  const { SUPERLIKERS_URL, API_KEY } = getConfig(campaignId)
+
   try {
-    const response = await axios.post(`${config.SUPERLIKERS_URL}/retail/buy`, data, {
+    const response = await axios.post(`${SUPERLIKERS_URL}/retail/buy`, data, {
       headers: {
-        Authorization: `Bearer ${apiKey}`
+        Authorization: `Bearer ${API_KEY}`
       }
     })
 

@@ -1,11 +1,12 @@
 /* eslint-disable camelcase */
-import { MICROSITES_CONSTS, MICROSITES_ID } from '../utils/processData.js'
 import { getParticipantApi, registerSaleApi } from '../utils/superlikers.js'
 import { addTagToDocument, updateDocument } from './veryfi.controller.js'
 
 export const getParticipantInfo = async (request, response) => {
+  const { campaign } = request.body
+
   try {
-    const data = await getParticipantApi(request.body.uid)
+    const data = await getParticipantApi(request.body.uid, campaign)
 
     response.status(200).json(data)
   } catch (err) {
@@ -17,29 +18,21 @@ export const getParticipantInfo = async (request, response) => {
 }
 
 export const registerSale = async (request, response) => {
-  const { microsite_url, distinct_id, ref, products, properties, discount } = request.body
+  const { campaign, distinct_id, ref, products, properties, discount } = request.body
 
-  const microsite = MICROSITES_ID[microsite_url]
-
-  const apiKey = MICROSITES_CONSTS[microsite]?.api_key
-
-  if (!microsite || !apiKey) {
-    throw new Error('micrositio no válido.')
-  }
-
-  const data = { campaign: microsite, distinct_id, ref, products, properties, discount, category: 'fisica' }
+  const data = { campaign, distinct_id, ref, products, properties, discount, category: 'fisica' }
 
   try {
-    const res = await registerSaleApi(data, apiKey)
+    const res = await registerSaleApi(data, campaign)
 
     const documentDataToUpdate = {
       external_id: res.invoice._id
     }
 
-    await updateDocument(ref, documentDataToUpdate)
+    await updateDocument(ref, documentDataToUpdate, campaign)
 
     const tag = { name: `points:${res.invoice.points}` }
-    await addTagToDocument(ref, tag)
+    await addTagToDocument(ref, tag, campaign)
 
     response.status(200).json(res)
   } catch (err) {

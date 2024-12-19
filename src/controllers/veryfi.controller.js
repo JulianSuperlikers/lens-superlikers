@@ -1,18 +1,23 @@
 /* eslint-disable camelcase */
 import axios from 'axios'
-import config from '../utils/config.js'
+import Client from '@veryfi/veryfi-sdk'
 
-import { getVeryfiSession, stringToUUID, veryfiClient } from '../utils/verifyClient.js'
+import { getConfig } from '../utils/config.js'
+
+import { getVeryfiSession, stringToUUID } from '../utils/verifyClient.js'
 import { getParticipantApi, registerSaleApi } from '../utils/superlikers.js'
 import { processDataByMicrosite, validateData } from '../utils/processData.js'
 
 export async function getSession (request, response) {
+  const { campaign } = request.body
+  const { VERYFI_CLIENT_ID } = getConfig(campaign)
+
   try {
-    const session = await getVeryfiSession(config.VERYFI_CLIENT_ID)
+    const session = await getVeryfiSession(campaign)
 
     if (session.ok === false) throw new Error(session.error)
 
-    response.status(200).json({ ok: true, session, client_id: config.VERYFI_CLIENT_ID })
+    response.status(200).json({ ok: true, session, client_id: VERYFI_CLIENT_ID })
   } catch (err) {
     response.status(400).json({
       ok: false,
@@ -22,13 +27,26 @@ export async function getSession (request, response) {
 }
 
 export async function processDocument (request, response) {
-  try {
-    const { external_id, device_data, image, microsite, uid } = request.body
+  const { device_data, image, campaign, uid } = request.body
 
-    const participant = await getParticipantApi(uid)
+  const { VERYFI_CLIENT_ID, VERYFI_USERNAME, VERYFI_API_KEY, VERYFI_BASE_URL, VERYFI_CLIENT_SECRET } = getConfig(campaign)
+
+  try {
+    const participant = await getParticipantApi(uid, campaign)
     const userUuid = await stringToUUID(uid)
 
     const deviceData = { ...device_data, user_uuid: userUuid }
+
+    const veryfiClient = new Client(
+      VERYFI_CLIENT_ID,
+      VERYFI_CLIENT_SECRET,
+      VERYFI_USERNAME,
+      VERYFI_API_KEY,
+      VERYFI_BASE_URL,
+      'v8',
+      120
+    )
+
     const document = await veryfiClient.process_document_from_base64(
       image,
       null,
@@ -46,7 +64,7 @@ export async function processDocument (request, response) {
     const error = validateData(document)
     if (error) throw new Error(error)
 
-    const data = processDataByMicrosite(microsite, participant.data, document)
+    const data = processDataByMicrosite(campaign, participant.data, document)
 
     response.status(200).json(data)
   } catch (err) {
@@ -59,11 +77,7 @@ export async function processDocument (request, response) {
 }
 
 export async function webhook (request, response) {
-  const { data } = request.body
-
-  const micrositeUrl = 'https://www.circulotena.com.mx/'
-  const microsite = config.TENA_CAMPAIGN_ID
-  const apiKey = config.TENA_API_KEY
+  const { data, campaign } = request.body
 
   try {
     const documentsPromises = data.map(item => getDocumentById(item.id))
@@ -74,7 +88,7 @@ export async function webhook (request, response) {
       if (error) return null
 
       const participant = await getParticipantApi(document.notes ?? document.external_id)
-      return processDataByMicrosite(micrositeUrl, participant.data, document, false)
+      return processDataByMicrosite(campaign, participant.data, document, false)
     })
 
     const documentsProcessedData = await Promise.all(documentsProcessedDataPromises)
@@ -82,9 +96,9 @@ export async function webhook (request, response) {
 
     const registerSalesPromises = filteredDocumentsProcessedData.map(async item => {
       const { distinct_id, ref, products, properties, date, discount } = item
-      const data = { campaign: microsite, distinct_id, ref, products, properties, date, discount, category: 'fisica' }
+      const data = { campaign, distinct_id, ref, products, properties, date, discount, category: 'fisica' }
 
-      return await registerSaleApi(data, apiKey)
+      return await registerSaleApi(data, campaign)
     })
 
     await Promise.all(registerSalesPromises)
@@ -95,15 +109,17 @@ export async function webhook (request, response) {
   }
 }
 
-export async function getDocumentById (documentId) {
+export async function getDocumentById (documentId, campaign) {
+  const { VERYFI_CLIENT_ID, VERYFI_USERNAME, VERYFI_API_KEY } = getConfig(campaign)
+
   const params = {
     method: 'get',
     maxBodyLength: Infinity,
     url: `https://api.veryfi.com/api/v8/partner/documents/${documentId}`,
     headers: {
       Accept: 'Application/json',
-      'CLIENT-ID': config.VERYFI_CLIENT_ID,
-      AUTHORIZATION: `apikey ${config.VERYFI_USERNAME}:${config.VERYFI_API_KEY}`
+      'CLIENT-ID': VERYFI_CLIENT_ID,
+      AUTHORIZATION: `apikey ${VERYFI_USERNAME}:${VERYFI_API_KEY}`
     }
   }
 
@@ -118,7 +134,9 @@ export async function getDocumentById (documentId) {
   }
 }
 
-export async function updateDocument (id, data) {
+export async function updateDocument (id, data, campaign) {
+  const { VERYFI_CLIENT_ID, VERYFI_USERNAME, VERYFI_API_KEY } = getConfig(campaign)
+
   const params = {
     method: 'put',
     maxBodyLength: Infinity,
@@ -126,8 +144,8 @@ export async function updateDocument (id, data) {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'Application/json',
-      'CLIENT-ID': config.VERYFI_CLIENT_ID,
-      AUTHORIZATION: `apikey ${config.VERYFI_USERNAME}:${config.VERYFI_API_KEY}`
+      'CLIENT-ID': VERYFI_CLIENT_ID,
+      AUTHORIZATION: `apikey ${VERYFI_USERNAME}:${VERYFI_API_KEY}`
     },
     data
   }
@@ -143,7 +161,9 @@ export async function updateDocument (id, data) {
   }
 }
 
-export async function addTagToDocument (id, tag) {
+export async function addTagToDocument (id, tag, campaign) {
+  const { VERYFI_CLIENT_ID, VERYFI_USERNAME, VERYFI_API_KEY } = getConfig(campaign)
+
   const params = {
     method: 'put',
     maxBodyLength: Infinity,
@@ -151,8 +171,8 @@ export async function addTagToDocument (id, tag) {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'Application/json',
-      'CLIENT-ID': config.VERYFI_CLIENT_ID,
-      AUTHORIZATION: `apikey ${config.VERYFI_USERNAME}:${config.VERYFI_API_KEY}`
+      'CLIENT-ID': VERYFI_CLIENT_ID,
+      AUTHORIZATION: `apikey ${VERYFI_USERNAME}:${VERYFI_API_KEY}`
     },
     data: JSON.stringify(tag)
   }

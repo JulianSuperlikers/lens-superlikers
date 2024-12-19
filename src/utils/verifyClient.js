@@ -1,19 +1,6 @@
 import axios from 'axios'
-import Client from '@veryfi/veryfi-sdk'
-
 import { createHash } from 'crypto'
-
-import config from './config.js'
-
-export const veryfiClient = new Client(
-  config.VERYFI_CLIENT_ID,
-  config.VERYFI_CLIENT_SECRET,
-  config.VERYFI_USERNAME,
-  config.VERYFI_API_KEY,
-  config.VERYFI_BASE_URL,
-  'v8',
-  120
-)
+import { getConfig } from './config.js'
 
 export async function stringToUUID (string) {
   try {
@@ -33,11 +20,12 @@ export async function stringToUUID (string) {
   }
 }
 
-export async function getVeryfiSession (clientId) {
-  const headers = { 'CLIENT-ID': clientId }
+export async function getVeryfiSession (campaign) {
+  const { VERYFI_CLIENT_ID, VERYFI_VALIDATE_URL } = getConfig(campaign)
+  const headers = { 'CLIENT-ID': VERYFI_CLIENT_ID }
 
   try {
-    const response = await axios.post(config.VERYFI_VALIDATE_URL, {}, { headers })
+    const response = await axios.post(VERYFI_VALIDATE_URL, {}, { headers })
     return response.data.session
   } catch (err) {
     const message = err.response.data.detail ?? err.message
