@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { MICROSITES_CONSTS } from '../utils/processData.js'
 import { getParticipantApi, registerSaleApi } from '../utils/superlikers.js'
 import { addTagToDocument, updateDocument } from './veryfi.controller.js'
 
@@ -23,6 +24,9 @@ export const registerSale = async (request, response) => {
   const data = { campaign, distinct_id, ref, products, properties, discount, category: 'fisica' }
 
   try {
+    const checkPoints = MICROSITES_CONSTS[campaign].pointsCodition(data.total)
+    if (!checkPoints) throw new Error('El total de la factura no cumple con los criterios de puntos')
+
     const res = await registerSaleApi(data, campaign)
 
     const documentDataToUpdate = {

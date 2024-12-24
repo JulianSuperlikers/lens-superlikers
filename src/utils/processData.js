@@ -1,6 +1,4 @@
 /* eslint-disable camelcase */
-import { getConfig } from './config.js'
-
 export const MICROSITES_URLS = {
   sz: 'https://www.circulotena.com.mx/',
   ua: 'https://sabaclub.com.mx/'
@@ -13,10 +11,20 @@ export const MICROSITES_CONSTS = {
       provider: 'TENA',
       line: 'TENA'
     },
+    tags: ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NO_DATE', 'NOT_VALID_DATE', 'NO_VENDOR', 'FRAUD', 'REJECTED'],
+    validationMessages: {
+      NO_PRODUCT_FOUND: 'No se encontraron productos TENA en esta factura.',
+      DUPLICATED: 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.',
+      NOT_VALID_DATE: 'La fecha de la factura supera el periodo permitido. Por favor, sube una factura más reciente.',
+      NO_DATE: 'No esta la fecha del ticket en la foto',
+      NO_VENDOR: 'No pudimos identificar el nombre de la tienda. Intenta con una factura más legible.',
+      FRAUD: 'Hemos detectado inconsistencias en la información proporcionada.',
+      REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.'
+    },
+    pointsCodition: (points) => points > 0 || points <= 3000,
     properties: (data) => {
       return { ticket: data.is_duplicate ? data.duplicate_of : data.id }
     }
-
   },
   ua: {
     uid: 'email',
@@ -24,29 +32,33 @@ export const MICROSITES_CONSTS = {
       provider: 'SABA',
       line: 'SABA'
     },
+    tags: ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NO_DATE', 'NOT_VALID_DATE', 'NO_VENDOR', 'FRAUD', 'REJECTED'],
+    validationMessages: {
+      NO_PRODUCT_FOUND: 'No se encontraron productos SABA en esta factura.',
+      DUPLICATED: 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.',
+      NOT_VALID_DATE: 'La fecha de la factura supera el periodo permitido. Por favor, sube una factura más reciente.',
+      NO_DATE: 'No esta la fecha del ticket en la foto',
+      NO_VENDOR: 'No pudimos identificar el nombre de la tienda. Intenta con una factura más legible.',
+      FRAUD: 'Hemos detectado inconsistencias en la información proporcionada.',
+      REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.'
+    },
+    pointsCodition: (points) => points > 0 || points <= 3000,
     properties: (data) => {
       return { ticket: data.is_duplicate ? data.duplicate_of : data.id }
     }
   }
 }
 
-export const validateData = (data) => {
+export const validateData = (data, campaign) => {
+  const micrositeConfiguration = MICROSITES_CONSTS[campaign]
+
   let errorMessage = ''
 
-  if (data.line_items.length === 0) errorMessage = 'No se encontraron productos TENA en esta factura.'
+  if (data.line_items.length === 0) errorMessage = 'No se encontraron productos en esta factura.'
   if (data.is_duplicate) errorMessage = 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.'
 
-  const TAGS = ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NO_DATE', 'NOT_VALID_DATE', 'NO_VENDOR', 'FRAUD', 'REJECTED']
-
-  const TAGS_MESSAGES = {
-    NO_PRODUCT_FOUND: 'No se encontraron productos TENA en esta factura.',
-    DUPLICATED: 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.',
-    NOT_VALID_DATE: 'La fecha de la factura supera el periodo permitido. Por favor, sube una factura más reciente.',
-    NO_DATE: 'No esta la fecha del ticket en la foto',
-    NO_VENDOR: 'No pudimos identificar el nombre de la tienda. Intenta con una factura más legible.',
-    FRAUD: 'Hemos detectado inconsistencias en la información proporcionada.',
-    REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.'
-  }
+  const TAGS = micrositeConfiguration.tags
+  const TAGS_MESSAGES = micrositeConfiguration.validationMessages
 
   const foundTag = data.tags.find(item => {
     const hasTag = TAGS.includes(item.name)
@@ -74,7 +86,7 @@ export const getItems = (data, additionalFields) => {
     const newItem = {
       ref,
       quantity,
-      price: !price ? total / quantity : price,
+      price: total,
       type: data.vendor.name
     }
 
@@ -87,9 +99,10 @@ export const getItems = (data, additionalFields) => {
     return item.discount < 0 ? item.discount * -1 : item.discount
   })
 
+  const total = validItems.reduce((ac, item) => ac + item.price, 0)
   const discount = itemsDiscount.reduce((ac, value) => ac + value, 0)
 
-  return [products, discount]
+  return [products, discount, total]
 }
 
 export const processDataByMicrosite = (campaign, participant, data) => {
@@ -99,14 +112,15 @@ export const processDataByMicrosite = (campaign, participant, data) => {
 
     const ref = data.is_duplicate ? data.duplicate_of : data.id
     const distinctId = participant[micrositeConsts.uid]
-    const [items, discount] = getItems(data, micrositeConsts.additionalProductsFields)
+    const [items, discount, total] = getItems(data, micrositeConsts.additionalProductsFields)
 
     const processedData = {
       ref,
       distinct_id: distinctId,
       products: items,
       redirect_url: micrositeUrl,
-      discount
+      discount,
+      total
     }
 
     if (micrositeConsts.properties) processedData.properties = micrositeConsts.properties(data)

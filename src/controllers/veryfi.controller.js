@@ -59,7 +59,7 @@ export async function processDocument (request, response) {
 
     await updateDocument(document.id, documentDataToUpdate, campaign)
 
-    const error = validateData(document)
+    const error = validateData(document, campaign)
     if (error) throw new Error(error)
 
     const data = processDataByMicrosite(campaign, participant.data, document)
@@ -75,18 +75,20 @@ export async function processDocument (request, response) {
 }
 
 export async function webhook (request, response) {
-  // todo: revisar el campaign como se puede poner en el document de veryfi
-  const { data, campaign } = request.body
+  const { data } = request.body
+  const campaign = request.query.campaign
 
   try {
-    const documentsPromises = data.map(item => getDocumentById(item.id))
+    if (!data) return response.status(400).json({ ok: false, error: 'No se encontró ningún documento' })
+
+    const documentsPromises = data.map(item => getDocumentById(item.id, campaign))
     const documents = await Promise.all(documentsPromises)
 
     const documentsProcessedDataPromises = documents.map(async document => {
-      const error = validateData(document)
+      const error = validateData(document, campaign)
       if (error) return null
 
-      const participant = await getParticipantApi(document.notes ?? document.external_id)
+      const participant = await getParticipantApi(document.notes, campaign)
       return processDataByMicrosite(campaign, participant.data, document, false)
     })
 
@@ -182,7 +184,6 @@ export async function addTagToDocument (id, tag, campaign) {
     if (data.ok === false) throw new Error(data.error)
     return data
   } catch (err) {
-    console.log(JSON.stringify(err.response.data))
     const message = err.response.data.error ?? err.message
     return { ok: false, error: message }
   }

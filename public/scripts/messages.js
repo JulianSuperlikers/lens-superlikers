@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { getQueryParams, reloadPage, saveData } from './utils.js'
+import { getQueryParams, MICROSITES_URLS, reloadPage, saveData } from './utils.js'
 
 export const showCameraMessage = (state) => {
   if (state !== 'denied') return
@@ -11,7 +11,7 @@ export const showCameraMessage = (state) => {
     confirmButtonText: 'Regresar'
   }).then(() => {
     const microsite = getQueryParams('microsite')
-    if (microsite) window.location.href = microsite
+    if (microsite) window.location.href = MICROSITES_URLS[microsite]
   })
 }
 
@@ -45,7 +45,7 @@ export const showParticipantError = (message) => {
     confirmButtonText: 'Regresar'
   }).then(() => {
     const microsite = getQueryParams('microsite')
-    if (microsite) window.location.href = microsite
+    if (microsite) window.location.href = MICROSITES_URLS[microsite]
   })
 }
 
@@ -62,7 +62,7 @@ export const showProcessError = (message) => {
       reloadPage()
     } else {
       const microsite = getQueryParams('microsite')
-      if (microsite) window.location.href = microsite
+      if (microsite) window.location.href = MICROSITES_URLS[microsite]
     }
   })
 }
@@ -74,7 +74,7 @@ export const showFinalMessage = () => {
     confirmButtonText: 'Regresar'
   }).then(() => {
     const microsite = getQueryParams('microsite')
-    if (microsite) window.location.href = microsite
+    if (microsite) window.location.href = MICROSITES_URLS[microsite]
   })
 }
 

@@ -1,6 +1,11 @@
 /* eslint-disable camelcase */
 import { showCameraMessage } from './messages.js'
 
+export const MICROSITES_URLS = {
+  sz: 'https://www.circulotena.com.mx/',
+  ua: 'https://sabaclub.com.mx/'
+}
+
 export const getQueryParams = (param) => {
   const url = new URL(window.location.href)
   const queryParams = new URLSearchParams(url.search)
@@ -48,7 +53,6 @@ export const getSession = async () => {
 export const processDocument = async (image, deviceData) => {
   const uid = getQueryParams('uid')
   const campaign = getQueryParams('microsite')
-  console.log({ uid, campaign })
 
   const requestOptions = {
     method: 'POST',

@@ -62,7 +62,7 @@ const processImage = async () => {
   }
 
   const res = await saveData(body)
-  console.log({ res })
+
   if (!res.ok) {
     showProcessError(response.error)
   } else {
