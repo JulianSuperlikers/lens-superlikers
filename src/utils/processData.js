@@ -54,7 +54,8 @@ export const validateData = (data, campaign) => {
 
   let errorMessage = ''
 
-  if (data.line_items.length === 0) errorMessage = 'No se encontraron productos en esta factura.'
+  const validItems = data.line_items.filter(item => item.tags.includes('PRODUCT_FOUND'))
+  if (data.line_items.length === 0 || validItems.length === 0) errorMessage = 'No se encontraron productos en esta factura.'
   if (data.is_duplicate) errorMessage = 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.'
 
   const TAGS = micrositeConfiguration.tags
