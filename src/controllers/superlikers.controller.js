@@ -36,6 +36,7 @@ export const registerSale = async (request, response) => {
     await updateDocument(ref, documentDataToUpdate, campaign)
 
     const tag = { name: `points:${res.invoice.points}` }
+    console.log(tag)
     await addTagToDocument(ref, tag, campaign)
 
     response.status(200).json(res)
