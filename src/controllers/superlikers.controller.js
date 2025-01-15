@@ -24,9 +24,6 @@ export const registerSale = async (request, response) => {
   const data = { campaign, distinct_id, ref, products, properties, discount, category: 'fisica' }
 
   try {
-    const checkPoints = MICROSITES_CONSTS[campaign].pointsCodition(data.total)
-    if (!checkPoints) throw new Error('El total de la factura no cumple con los criterios de puntos')
-
     const res = await registerSaleApi(data, campaign)
 
     const documentDataToUpdate = {
@@ -36,7 +33,6 @@ export const registerSale = async (request, response) => {
     await updateDocument(ref, documentDataToUpdate, campaign)
 
     const tag = { name: `points:${res.invoice.points}` }
-    console.log(tag)
     await addTagToDocument(ref, tag, campaign)
 
     response.status(200).json(res)

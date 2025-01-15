@@ -21,7 +21,6 @@ export const MICROSITES_CONSTS = {
       FRAUD: 'Hemos detectado inconsistencias en la información proporcionada.',
       REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.'
     },
-    pointsCodition: (points) => points > 0 || points <= 3000,
     properties: (data) => {
       return { ticket: data.is_duplicate ? data.duplicate_of : data.id }
     }
@@ -42,7 +41,6 @@ export const MICROSITES_CONSTS = {
       FRAUD: 'Hemos detectado inconsistencias en la información proporcionada.',
       REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.'
     },
-    pointsCodition: (points) => points > 0 || points <= 3000,
     properties: (data) => {
       return { ticket: data.is_duplicate ? data.duplicate_of : data.id }
     }

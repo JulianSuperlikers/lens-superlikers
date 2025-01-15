@@ -28,8 +28,6 @@ export const getParticipantApi = async (distinctId, campaignId) => {
 export const registerSaleApi = async (data, campaignId) => {
   const { SUPERLIKERS_URL, API_KEY } = getConfig(campaignId)
 
-  console.log({ SUPERLIKERS_URL, API_KEY, data, campaignId })
-
   try {
     const response = await axios.post(`${SUPERLIKERS_URL}/retail/buy`, data, {
       headers: {
@@ -39,9 +37,6 @@ export const registerSaleApi = async (data, campaignId) => {
 
     return response.data
   } catch (err) {
-    console.log({ err })
-    console.log(err.response.data)
-
     const message = err.response.data.message ?? err.message
     return { ok: false, error: message }
   }
