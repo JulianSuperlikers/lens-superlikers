@@ -26,6 +26,7 @@ export const getParticipantApi = async (distinctId, campaignId) => {
 }
 
 export const registerSaleApi = async (data, campaignId) => {
+  console.log({ x: JSON.stringify(data) })
   const { SUPERLIKERS_URL, API_KEY } = getConfig(campaignId)
 
   try {
@@ -37,6 +38,7 @@ export const registerSaleApi = async (data, campaignId) => {
 
     return response.data
   } catch (err) {
+    console.log({ err: err.response.data, json: JSON.stringify(err.response.data) })
     const message = err.response.data.message ?? err.message
     return { ok: false, error: message }
   }

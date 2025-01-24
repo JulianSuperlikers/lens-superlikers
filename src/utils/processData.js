@@ -19,7 +19,8 @@ export const MICROSITES_CONSTS = {
       NO_DATE: 'No esta la fecha del ticket en la foto',
       NO_VENDOR: 'No pudimos identificar el nombre de la tienda. Intenta con una factura más legible.',
       FRAUD: 'Hemos detectado inconsistencias en la información proporcionada.',
-      REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.'
+      REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.',
+      MANUAL_REVIEW: 'La factura ha sido marcada para revisión manual.'
     },
     properties: (data) => {
       return { ticket: data.is_duplicate ? data.duplicate_of : data.id }
@@ -39,7 +40,8 @@ export const MICROSITES_CONSTS = {
       NO_DATE: 'No esta la fecha del ticket en la foto',
       NO_VENDOR: 'No pudimos identificar el nombre de la tienda. Intenta con una factura más legible.',
       FRAUD: 'Hemos detectado inconsistencias en la información proporcionada.',
-      REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.'
+      REJECTED: 'La factura no cumple con los criterios necesarios y ha sido rechazada.',
+      MANUAL_REVIEW: 'La factura ha sido marcada para revisión manual.'
     },
     properties: (data) => {
       return { ticket: data.is_duplicate ? data.duplicate_of : data.id }
@@ -85,7 +87,7 @@ export const getItems = (data, additionalFields) => {
     const newItem = {
       ref,
       quantity,
-      price: total,
+      price: !price ? total / quantity : price,
       type: data.vendor.name
     }
 

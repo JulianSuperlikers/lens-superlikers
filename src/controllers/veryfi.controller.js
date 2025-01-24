@@ -63,6 +63,7 @@ export async function processDocument (request, response) {
     if (error) throw new Error(error)
 
     const data = processDataByMicrosite(campaign, participant.data, document)
+    console.log({ processedData: data })
 
     response.status(200).json(data)
   } catch (err) {
@@ -73,6 +74,11 @@ export async function processDocument (request, response) {
     })
   }
 }
+
+// No se quita el tag de manual review, revisar como seria esa parte para el webhook
+// agregar manual review tag en los mensajes de error
+// quitar revision por puntos
+// los tag de aproved, rejected y manual review van separados. Pero en el webhook la factura tendrá manual review y aproved juntos.
 
 export async function webhook (request, response) {
   const { data } = request.body
@@ -89,7 +95,10 @@ export async function webhook (request, response) {
       if (error) return null
 
       const participant = await getParticipantApi(document.notes, campaign)
-      return processDataByMicrosite(campaign, participant.data, document, false)
+
+      const processedData = processDataByMicrosite(campaign, participant.data, document, false)
+      console.log({ processedData, webhook: true })
+      return processedData
     })
 
     const documentsProcessedData = await Promise.all(documentsProcessedDataPromises)
@@ -98,10 +107,13 @@ export async function webhook (request, response) {
     const registerSalesPromises = filteredDocumentsProcessedData.map(async item => {
       const { distinct_id, ref, products, properties, date, discount } = item
       const data = { campaign, distinct_id, ref, products, properties, date, discount, category: 'fisica' }
+      console.log({ data, webhook: true })
 
-      return await registerSaleApi(data, campaign)
+      const res = await registerSaleApi(data, campaign)
+      const tag = { name: `points:${res.invoice.points}` }
+      await addTagToDocument(ref, tag, campaign)
     })
-
+    console.log('here')
     await Promise.all(registerSalesPromises)
 
     response.status(200)
@@ -157,6 +169,7 @@ export async function updateDocument (id, data, campaign) {
     if (data.ok === false) throw new Error(data.error)
     return data
   } catch (err) {
+    console.log({ updateDocumentError: err, data: JSON.stringify(err.response.data) })
     const message = err.response.data.message ?? err.message
     return { ok: false, error: message }
   }
@@ -184,7 +197,10 @@ export async function addTagToDocument (id, tag, campaign) {
     if (data.ok === false) throw new Error(data.error)
     return data
   } catch (err) {
+    console.log({ addTagToDocument: err, data: JSON.stringify(err.response.data) })
     const message = err.response.data.error ?? err.message
     return { ok: false, error: message }
   }
 }
+
+// 276864704
