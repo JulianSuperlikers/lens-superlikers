@@ -11,7 +11,7 @@ export const MICROSITES_CONSTS = {
       provider: 'TENA',
       line: 'TENA'
     },
-    tags: ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NO_DATE', 'NOT_VALID_DATE', 'NO_VENDOR', 'FRAUD', 'REJECTED'],
+    tags: ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NO_DATE', 'NOT_VALID_DATE', 'NO_VENDOR', 'FRAUD', 'REJECTED', 'MANUAL_REVIEW'],
     validationMessages: {
       NO_PRODUCT_FOUND: 'No se encontraron productos TENA en esta factura.',
       DUPLICATED: 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.',
@@ -32,7 +32,7 @@ export const MICROSITES_CONSTS = {
       provider: 'SABA',
       line: 'SABA'
     },
-    tags: ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NO_DATE', 'NOT_VALID_DATE', 'NO_VENDOR', 'FRAUD', 'REJECTED'],
+    tags: ['NO_PRODUCT_FOUND', 'DUPLICATED', 'NO_DATE', 'NOT_VALID_DATE', 'NO_VENDOR', 'FRAUD', 'REJECTED', 'MANUAL_REVIEW'],
     validationMessages: {
       NO_PRODUCT_FOUND: 'No se encontraron productos SABA en esta factura.',
       DUPLICATED: 'Parece que esta factura ya ha sido registrada. Sube una factura diferente.',
