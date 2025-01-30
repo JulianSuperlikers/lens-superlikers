@@ -14,12 +14,42 @@
   <title>Superlikers Lens</title>
 </head>
 <body class="absolute bg-[#171C3A] flex flex-col h-full w-full justify-center items-center overflow-hidden">
-  <p class="text-5xl text-white">Cargando...</p>
-  <div id="status" class="text-center text-white font-bold font-mono text-[60px]"></div>
-  <div id="preview" class="absolute top-5 flex flex-col"></div>
-  <div id="veryfi-container" class="flex items-center justify-center overflow-hidden">
-    <button class="absolute bottom-8 sm:bottom-16 left-0 right-0 ml-auto mr-auto border-4 border-white-600 hover:bg-white/50 rounded-full w-16 h-16 z-50">
+
+  
+  <div id="actions" class="hidden z-50 flex-col items-center gap-4">
+    <!-- Botón: Tomar Foto -->
+    <button
+      id="take_photo"
+      class="bg-[#FFC107] text-black font-semibold rounded-md py-2 px-6 shadow-md hover:bg-yellow-500 hover:shadow-lg transition duration-200"
+    >
+      Tomar Foto
     </button>
+    
+    <!-- Botón: Subir Archivo -->
+    <div class="flex flex-col gap-2 items-center">
+      <button
+        id="upload_file"
+        class="bg-[#03A9F4] text-white font-semibold rounded-md py-2 px-6 shadow-md hover:bg-blue-500 hover:shadow-lg transition duration-200"
+      >
+        Subir Archivo
+      </button>
+      <p id="file_name" class="text-white"></p>
+      <input type="file" id="file_input" class="hidden">
+
+      <button id="send_document" class="hidden bg-[#4CAF50] text-white font-semibold rounded-md py-2 px-6 shadow-md hover:bg-green-600 hover:shadow-lg transition duration-200">
+        Enviar
+      </button>
+    </div>
+  </div>
+  
+  <div id="content" class="hidden">
+    <p id="loading" class="text-5xl text-white">Cargando...</p>
+    <div id="status" class="text-center text-white font-bold font-mono text-[60px]"></div>
+    <div id="preview" class="absolute top-5 flex flex-col"></div>
+    <div id="veryfi-container" class="flex items-center justify-center overflow-hidden">
+      <button class="absolute bottom-8 sm:bottom-16 left-0 right-0 ml-auto mr-auto border-4 border-white-600 hover:bg-white/50 rounded-full w-16 h-16 z-50">
+      </button>
+    </div>
   </div>
 </body>
 </html>
