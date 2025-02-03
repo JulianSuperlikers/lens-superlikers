@@ -115,8 +115,10 @@ const initSesionAndDeviceData = async () => {
 
 const initVerifyWithCamera = async () => {
 // capture image on click
-  const button = document.querySelector('button')
-  button.addEventListener('click', captureWasm)
+  const button = document.querySelector('#upload-photo')
+  button.addEventListener('click', () => {
+    captureWasm()
+  })
 
   await VeryfiLens.initWasm(session.session, session.client_id)
 }
