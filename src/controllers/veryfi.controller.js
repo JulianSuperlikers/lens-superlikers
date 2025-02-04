@@ -63,11 +63,9 @@ export async function processDocument (request, response) {
     if (error) throw new Error(error)
 
     const data = processDataByMicrosite(campaign, participant.data, document)
-    console.log({ processedData: data })
 
     response.status(200).json(data)
   } catch (err) {
-    console.log({ err })
     response.status(400).json({
       ok: false,
       error: err.message
@@ -91,13 +89,12 @@ export async function webhook (request, response) {
     const documents = await Promise.all(documentsPromises)
 
     const documentsProcessedDataPromises = documents.map(async document => {
-      const error = validateData(document, campaign)
-      if (error) return null
+      const hasApprovedTag = document.tags.some(item => item.name === 'APPROVED')
+      if (!hasApprovedTag) return null
 
       const participant = await getParticipantApi(document.notes, campaign)
 
       const processedData = processDataByMicrosite(campaign, participant.data, document, false)
-      console.log({ processedData, webhook: true })
       return processedData
     })
 
@@ -107,13 +104,12 @@ export async function webhook (request, response) {
     const registerSalesPromises = filteredDocumentsProcessedData.map(async item => {
       const { distinct_id, ref, products, properties, date, discount } = item
       const data = { campaign, distinct_id, ref, products, properties, date, discount, category: 'fisica' }
-      console.log({ data, webhook: true })
 
       const res = await registerSaleApi(data, campaign)
       const tag = { name: `points:${res.invoice.points}` }
       await addTagToDocument(ref, tag, campaign)
     })
-    console.log('here')
+
     await Promise.all(registerSalesPromises)
 
     response.status(200)
@@ -169,7 +165,6 @@ export async function updateDocument (id, data, campaign) {
     if (data.ok === false) throw new Error(data.error)
     return data
   } catch (err) {
-    console.log({ updateDocumentError: err, data: JSON.stringify(err.response.data) })
     const message = err.response.data.message ?? err.message
     return { ok: false, error: message }
   }
@@ -197,7 +192,6 @@ export async function addTagToDocument (id, tag, campaign) {
     if (data.ok === false) throw new Error(data.error)
     return data
   } catch (err) {
-    console.log({ addTagToDocument: err, data: JSON.stringify(err.response.data) })
     const message = err.response.data.error ?? err.message
     return { ok: false, error: message }
   }
