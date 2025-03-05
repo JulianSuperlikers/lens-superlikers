@@ -77,17 +77,18 @@ export const validateData = (data, campaign) => {
 }
 
 export const getItems = (data, additionalFields) => {
-  const validItems = data.line_items.filter(item => item.tags.includes('PRODUCT_FOUND'))
+  const validItems = data.line_items.filter(item => item.tags.includes('PRODUCT_FOUND') && item.total > 0)
+  const discountItems = data.line_items.filter(item => item.tags.includes('PRODUCT_FOUND') && item.total <= 0)
 
   const products = validItems.map(item => {
-    const { description, product_details, price, quantity, total } = item
+    const { description, product_details, quantity, total } = item
 
     const ref = product_details.at(0) ? product_details.at(0).product_name : description
 
     const newItem = {
       ref,
       quantity,
-      price: !price ? total / quantity : price,
+      price: quantity !== 0 ? total / Math.abs(quantity) : 0,
       type: data.vendor.name
     }
 
@@ -95,13 +96,11 @@ export const getItems = (data, additionalFields) => {
     return newItem
   })
 
-  const itemsDiscount = validItems.map(item => {
-    if (!item.discount) return 0
-    return item.discount < 0 ? item.discount * -1 : item.discount
-  })
+  const productDiscounts = validItems.reduce((sum, item) => sum + (item.discount ? Math.abs(item.discount) : 0), 0)
+  const separateDiscounts = discountItems.reduce((sum, item) => sum + Math.abs(item.total), 0)
+  const discount = productDiscounts + separateDiscounts
 
-  const total = validItems.reduce((ac, item) => ac + item.price, 0)
-  const discount = itemsDiscount.reduce((ac, value) => ac + value, 0)
+  const total = validItems.reduce((sum, item) => sum + item.total, 0)
 
   return [products, discount, total]
 }
